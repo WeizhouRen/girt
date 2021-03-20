@@ -1,0 +1,16 @@
+#!/bin/dash
+
+path="$@"
+if []
+then
+	path="."		
+fi
+
+for file in "$path"
+do
+	# check filename
+	if  echo "$file" | grep -E '^[a-zA-Z0-9]+((.|-|_)*[a-zA-Z0-9]*)*(.|-|_)*'  
+	then
+		echo "$file"
+	fi
+done
