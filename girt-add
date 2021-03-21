@@ -1,21 +1,44 @@
 #!/bin/dash
 
-path="$@"
+# test .girt exists
+if ! test -d .girt
+then
+	echo "$0: error: girt repository directory .girt not found"
+	exit 1
+fi
+# get usage
 if test $# -eq 0 
 then
-	echo "Please enter an argument."
-elif  test $# -eq 1 && echo "$1" | grep -E '^.$' >/dev/null 
-then
-	path='*'		
+	echo "usage: $0 <filenames>"
+	exit 1
 fi
-# echo $path
-for file in $path
+
+# iterate all args
+for file in "$@"
 do
 	# check filename
-	if  echo "$file" | grep -E '^[a-zA-Z0-9]+((.|-|_)*[a-zA-Z0-9]*)*(.|-|_)*'  > /dev/null
+	if  echo "$file" | grep -E -v '^[a-zA-Z0-9]+((.|-|_)*[a-zA-Z0-9]*)*(.|-|_)*'  > /dev/null
 	then
-		# add file to index
-		dest="./.girt/index/${file}"
-		cp "$file" "$dest"
+		# girt-add: error: invalid filename '.'
+		echo "$0: error: invalid filename '${file}'"
+		exit 1
 	fi
+
+	# if file is a folder, "girt-add: error: 'test' is not a regular file"
+	if test -d "$file"
+	then
+		echo "$0: error: '${file}' is not a regular file"
+		exit 1
+	fi
+
+	# file no exists, "girt-add: error: cannot open 'filename'"
+	if ! test -f "$file"
+	then
+		echo "$0: error: can not open '${file}'"
+		exit 1
+	fi
+
+	# add file to index
+	dest="./.girt/index/${file}"
+	cp "$file" "$dest"
 done

@@ -1,0 +1,82 @@
+#!/bin/dash
+
+# test .girt exists
+if ! test -d .girt
+then
+	echo "$0: error: girt repository directory .girt not found"
+	exit 1
+fi
+
+# Get commit message
+commit_msg=""
+a="false"
+
+if test $# = 3 && test "$1" = "-a"
+then
+	a="true"
+	if test "$2" = "-m"
+	then
+		commit_msg="$3"
+	else
+		echo "usage: $0 [-a] -m commit-message"
+		exit 1
+	fi
+elif test $# = 2 && test "$1" = "-m" 
+then
+	commit_msg="$2"
+else
+	echo "usage: $0 [-a] -m commit-message"
+	exit 1
+fi
+
+# Test commit message should not start with '-'
+if echo "$commit_msg" | grep -E '^-' > /dev/null || test "${#commit_msg}" -eq 0 > /dev/null
+then 
+	echo "usage: $0 [-a] -m commit-message"
+	exit 1
+fi
+
+# The girt-commit command saves a copy of all files in the index to the repository.
+
+logs=".girt/logs"
+commit_no=$( cat "$logs" | wc -l )
+nothing_to_commit="true"
+# compare file in index and last commit
+if test "$commit_no" -gt 0
+then
+	for file in .girt/index/*
+	do
+		cmp=$(( commit_no - 1 ))
+		same=$( diff "$file" ".girt/commit_${cmp}" )
+
+		if test ${#same} -gt 0
+		then
+			nothing_to_commit="false"
+		fi
+	done
+fi
+
+if test $commit_no -gt 0 && $nothing_to_commit = "true"
+then
+	echo "nothing to commit"
+	exit 1
+fi
+
+commit_dir=".girt/commit_${commit_no}"
+mkdir "$commit_dir"
+
+for file in .girt/index/*
+do
+	# commit to repo
+	filename=$( echo "$file" | cut -d'/' -f3 )
+	dest=".girt/repository/${filename}"
+	cp "$file" "$dest"
+	# save commit version
+	cp "$file" "${commit_dir}/${filename}"
+done
+
+echo "Committed as commit ${commit_no}"
+
+# append info to logs file
+content="${commit_no} ${commit_msg}"
+echo "${content}" >> $logs

@@ -6,8 +6,10 @@ then
 	exit 1
 else
 	mkdir .girt
-	touch ./.girt/text.txt
-	mkdir -p .girt/index	# create index folder
+	mkdir -p .girt/index		# create index folder
+	mkdir -p .girt/repository 	# create repository folder
+	touch .girt/logs			# create logs file
 	echo "Initialized empty girt repository in .girt"
+	exit 0
 fi
 

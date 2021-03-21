@@ -1,0 +1,9 @@
+rm -rf .girt
+./girt-init
+echo 1 > a
+./girt-add a
+echo 2 > a
+./girt-commit -m message
+echo 3 > a
+./girt-show 0:a
+./girt-show :a
