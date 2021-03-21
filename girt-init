@@ -7,6 +7,7 @@ then
 else
 	mkdir .girt
 	touch ./.girt/text.txt
+	mkdir -p .girt/index	# create index folder
 	echo "Initialized empty girt repository in .girt"
 fi
 

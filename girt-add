@@ -1,16 +1,21 @@
 #!/bin/dash
 
 path="$@"
-if []
+if test $# -eq 0 
 then
-	path="."		
+	echo "Please enter an argument."
+elif  test $# -eq 1 && echo "$1" | grep -E '^.$' >/dev/null 
+then
+	path='*'		
 fi
-
-for file in "$path"
+# echo $path
+for file in $path
 do
 	# check filename
-	if  echo "$file" | grep -E '^[a-zA-Z0-9]+((.|-|_)*[a-zA-Z0-9]*)*(.|-|_)*'  
+	if  echo "$file" | grep -E '^[a-zA-Z0-9]+((.|-|_)*[a-zA-Z0-9]*)*(.|-|_)*'  > /dev/null
 	then
-		echo "$file"
+		# add file to index
+		dest="./.girt/index/${file}"
+		cp "$file" "$dest"
 	fi
 done
