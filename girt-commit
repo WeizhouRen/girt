@@ -3,7 +3,7 @@
 # test .girt exists
 if ! test -d .girt
 then
-	echo "$0: error: girt repository directory .girt not found"
+	echo "girt-commit: error: girt repository directory .girt not found"
 	exit 1
 fi
 
@@ -18,26 +18,41 @@ then
 	then
 		commit_msg="$3"
 	else
-		echo "usage: $0 [-a] -m commit-message"
+		echo "usage: girt-commit [-a] -m commit-message"
 		exit 1
 	fi
 elif test $# = 2 && test "$1" = "-m" 
 then
 	commit_msg="$2"
 else
-	echo "usage: $0 [-a] -m commit-message"
+	echo "usage: girt-commit [-a] -m commit-message"
 	exit 1
 fi
 
 # Test commit message should not start with '-'
 if echo "$commit_msg" | grep -E '^-' > /dev/null || test "${#commit_msg}" -eq 0 > /dev/null
 then 
-	echo "usage: $0 [-a] -m commit-message"
+	echo "usage: girt-commit [-a] -m commit-message"
 	exit 1
 fi
 
-# The girt-commit command saves a copy of all files in the index to the repository.
+# -a option, which causes all files already in the index to have their contents 
+# from the current directory added to the index before the commit.
 
+if test "$a" = "true"
+then
+	for file in .girt/index/*
+	do
+		filename=$( echo "$file" | cut -d'/' -f3 ) 	# get target file
+		if test -f "$filename"
+		then
+			cp "$filename" "$file"					# add to index
+		fi
+	done
+fi
+
+
+# The girt-commit command saves a copy of all files in the index to the repository.
 logs=".girt/logs"
 commit_no=$( cat "$logs" | wc -l )
 nothing_to_commit="true"
@@ -47,7 +62,8 @@ then
 	for file in .girt/index/*
 	do
 		cmp=$(( commit_no - 1 ))
-		same=$( diff "$file" ".girt/commit_${cmp}" )
+		filename=$( echo "$file" | cut -d'/' -f3 )
+		same=$( diff "$file" ".girt/commit_${cmp}/${filename}" )
 
 		if test ${#same} -gt 0
 		then
@@ -62,6 +78,15 @@ then
 	exit 1
 fi
 
+# commit before add will raise usage error (when index is empty)
+index_size=$( ls .girt/index |wc -l )
+if test "$index_size" -eq 0
+then
+	echo "nothing to commit"
+	exit 1
+fi
+
+# copy from index to repository
 commit_dir=".girt/commit_${commit_no}"
 mkdir "$commit_dir"
 
