@@ -3,7 +3,7 @@
 # test .girt exists
 if ! test -d .girt
 then
-	echo "girt-add: error: girt repository directory .girt not found"
+	echo "$0: error: girt repository directory .girt not found"
 	exit 1
 fi
 # get usage

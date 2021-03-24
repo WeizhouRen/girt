@@ -1,0 +1,66 @@
+#!/bin/dash
+
+# test .girt exists
+if ! test -d .girt
+then
+	echo "$0: error: girt repository directory .girt not found"
+	exit 1
+fi
+
+# get all files
+for file in *
+do  
+    # if ! test -f $file; then continue; fi
+    index_file=".girt/index/${file}"
+    repo_file=".girt/repository/${file}"
+    if ! test -f $index_file
+    then
+        echo "${file} - untracked"
+    elif ! test -f $repo_file && cmp -s $file $index_file
+    then
+        echo "${file} - added to index"
+    elif ! test -f $repo_file && ! cmp -s $file $index_file
+    then
+        echo "${file} - added to index, file changed"
+    # file staged with changes after commit , and added changes
+    elif ! cmp -s $file $index_file && ! cmp -s $index $repo_file
+    then
+        echo "${file} - file changed, different changes staged for commit"
+    # file committed, and staged with new changes
+    elif cmp -s $file $index_file && ! cmp -s $index_file $repo_file
+    then
+        echo "${file} - file changed, changes staged for commit"
+    # file chagnes after commit
+    elif ! cmp -s $file $index_file && cmp -s $index_file $repo_file
+    then
+        echo "${file} - file changed, changes not staged for commit"
+    # no changes after commit
+    elif cmp -s $file $index_file && cmp -s $file $repo_file
+    then
+        echo "${file} - same as repo"
+    fi
+    # echo 'end'
+done
+
+
+# if test $( ls .girt/index/ | wc -l ) -gt 0
+# then
+#     for file in .girt/index/*
+#     do
+#         filename=$( echo $file | cut -d'/' -f3 )
+#         if ! test -f $filename
+#             echo "${filename} - file deleted"
+#         fi
+#     done
+# fi
+
+# if test $( ls .girt/repository/ | wc -l ) -gt 0
+# then
+#     for file in .girt/repository/*
+#     do
+#         filename=$( echo $file | cut -d'/' -f3 )
+#         if ! test -f $filename
+#             echo "${filename} - deleted"
+#         fi
+#     done
+# fi
