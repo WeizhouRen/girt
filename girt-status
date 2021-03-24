@@ -6,61 +6,74 @@ then
 	echo "$0: error: girt repository directory .girt not found"
 	exit 1
 fi
-
+status="tmp/status.txt"
+mkdir tmp && touch $status
 # get all files
 for file in *
 do  
-    # if ! test -f $file; then continue; fi
+    if ! test -f $file; then continue; fi
     index_file=".girt/index/${file}"
     repo_file=".girt/repository/${file}"
+
     if ! test -f $index_file
     then
-        echo "${file} - untracked"
+        echo "${file} - untracked" >> $status
     elif ! test -f $repo_file && cmp -s $file $index_file
     then
-        echo "${file} - added to index"
+        echo "${file} - added to index" >> $status
     elif ! test -f $repo_file && ! cmp -s $file $index_file
     then
-        echo "${file} - added to index, file changed"
+        echo "${file} - added to index, file changed" >> $status
     # file staged with changes after commit , and added changes
-    elif ! cmp -s $file $index_file && ! cmp -s $index $repo_file
+    elif ! cmp -s $file $index_file && ! cmp -s $index_file $repo_file
     then
-        echo "${file} - file changed, different changes staged for commit"
+        echo "${file} - file changed, different changes staged for commit" >> $status
     # file committed, and staged with new changes
-    elif cmp -s $file $index_file && ! cmp -s $index_file $repo_file
+    elif cmp -s $file $index_file
     then
-        echo "${file} - file changed, changes staged for commit"
+	    # no changes after commit
+        if cmp -s $index_file $repo_file
+        then
+            echo "${file} - same as repo" >> $status
+        else
+            echo "${file} - file changed, changes staged for commit" >> $status
+        fi
     # file chagnes after commit
     elif ! cmp -s $file $index_file && cmp -s $index_file $repo_file
     then
-        echo "${file} - file changed, changes not staged for commit"
-    # no changes after commit
-    elif cmp -s $file $index_file && cmp -s $file $repo_file
-    then
-        echo "${file} - same as repo"
+        echo "${file} - file changed, changes not staged for commit" >> $status
     fi
-    # echo 'end'
 done
 
 
-# if test $( ls .girt/index/ | wc -l ) -gt 0
-# then
-#     for file in .girt/index/*
-#     do
-#         filename=$( echo $file | cut -d'/' -f3 )
-#         if ! test -f $filename
-#             echo "${filename} - file deleted"
-#         fi
-#     done
-# fi
+if test $( ls .girt/index/ | wc -l ) -gt 0
+then
+    for file in .girt/index/*
+    do
+        filename=$( echo $file | cut -d'/' -f3 )
+        if ! test -f $filename
+        then
+            if cmp -s $file ".girt/repository/${filename}"
+            then
+                echo "${filename} - file deleted" >> $status
+            else
+                echo "${filename} - added to index, file deleted" >> $status
+            fi
+        fi
+    done
+fi
 
-# if test $( ls .girt/repository/ | wc -l ) -gt 0
-# then
-#     for file in .girt/repository/*
-#     do
-#         filename=$( echo $file | cut -d'/' -f3 )
-#         if ! test -f $filename
-#             echo "${filename} - deleted"
-#         fi
-#     done
-# fi
+if test $( ls .girt/repository/ | wc -l ) -gt 0
+then
+    for file in .girt/repository/*
+    do
+        filename=$( echo $file | cut -d'/' -f3 )
+        if ! test -f $filename && ! test -f ".girt/index/${filename}"
+        then
+            echo "${filename} - deleted" >> $status
+        fi
+    done
+fi
+
+cat $status | sort
+rm -rf tmp

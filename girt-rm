@@ -55,12 +55,11 @@ do
     # when force is specified, remove file directly
     if test "$force" = "true"
     then
-        if test "$cache" = "true"
+        if test "$cached" = "true"
         then
             rm "$index"
         else
-            rm "$index"
-            rm "$file"
+            rm "$index" "$file"
         fi
         exit 1
     fi
@@ -104,7 +103,6 @@ do
             # echo "remvoe ${index} in index in 94"
             rm "$index"
         else
-            # echo "remvoe ${file} and ${index} in 99"
             rm "$file" "$index"
         fi
     fi
