@@ -3,13 +3,13 @@
 # test .girt exists
 if ! test -d .girt
 then
-	echo "$0: error: girt repository directory .girt not found"
+	echo "girt-add: error: girt repository directory .girt not found"
 	exit 1
 fi
 # get usage
 if test $# -eq 0 
 then
-	echo "usage: $0 <filenames>"
+	echo "usage: girt-add <filenames>"
 	exit 1
 fi
 
@@ -20,22 +20,31 @@ do
 	if  echo "$file" | grep -E -v '^[a-zA-Z0-9]+((.|-|_)*[a-zA-Z0-9]*)*(.|-|_)*'  > /dev/null
 	then
 		# girt-add: error: invalid filename '.'
-		echo "$0: error: invalid filename '${file}'"
+		echo "girt-add: error: invalid filename '${file}'"
 		exit 1
 	fi
 
 	# if file is a folder, "girt-add: error: 'test' is not a regular file"
 	if test -d "$file"
 	then
-		echo "$0: error: '${file}' is not a regular file"
+		echo "girt-add: error: '${file}' is not a regular file"
 		exit 1
 	fi
 
-	# file no exists, "girt-add: error: cannot open 'filename'"
-	if ! test -f "$file"
+	# file no exists in both working direcotry and index
+	# "girt-add: error: cannot open 'filename'"
+	if ! test -f "$file" && ! test -f ".girt/index/${file}"
 	then
-		echo "$0: error: can not open '${file}'"
+		echo "girt-add: error: can not open '${file}'"
 		exit 1
+	fi
+
+	# file has been removed in working directory, but exists in index
+	# remove the file in index as well
+	if ! test -f "$file" && test -f ".girt/index/${file}"
+	then
+		rm ".girt/index/${file}"
+		exit 0
 	fi
 
 	# add file to index
