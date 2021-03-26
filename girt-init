@@ -6,9 +6,11 @@ then
 	exit 1
 else
 	mkdir .girt
-	mkdir -p .girt/index		# create index folder
-	mkdir -p .girt/repository 	# create repository folder
-	touch .girt/logs			# create logs file
+	echo 'master' > .girt/branch	# create file to record branches
+	mkdir -p .girt/master/index			# create index folder
+	mkdir -p .girt/master/repository 		# create repository folder
+	touch .girt/master/logs				# create logs file
+	
 	echo "Initialized empty girt repository in .girt"
 	exit 0
 fi

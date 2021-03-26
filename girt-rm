@@ -7,11 +7,15 @@ then
 	exit 1
 fi
 
+# get branch
+branch=$( cat .girt/branch )
+
+# initialize flags
 cached="false"
 force="false"
 files=""
-# specify options and files
 
+# specify options and files
 while test $# -gt 0
 do
     case $1 in
@@ -30,27 +34,17 @@ do
     esac
 done
 
-# echo $cached
-# echo $force
-
 files=$( echo "$files" | sed 's/ $//' | tr ' ' '\n')
 echo "$files" | while read file
 do
-    index=".girt/index/${file}"
-    repo=".girt/repository/${file}"
+    index=".girt/${branch}/index/${file}"
+    repo=".girt/${branch}/repository/${file}"
     # test file exists in index 
     if ! test -f "$file" || ! test -f "$index"
     then 
         echo "girt-rm: error: '${file}' is not in the girt repository"
         exit 1
     fi
-
-    # test file exists in repo 
-    # if ! test -f "$repo"
-    # then 
-    #     echo "girt-rm: error: '${file}' has staged changes in the index"
-    #     exit 1
-    # fi
 
     # when force is specified, remove file directly
     if test "$force" = "true"

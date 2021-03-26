@@ -6,14 +6,20 @@ then
 	echo "$0: error: girt repository directory .girt not found"
 	exit 1
 fi
+
+# get branch
+branch=$( cat .girt/branch )
+
+# initialize tmp file
 status="tmp/status.txt"
 mkdir tmp && touch $status
+
 # get all files
 for file in *
 do  
     if ! test -f $file; then continue; fi
-    index_file=".girt/index/${file}"
-    repo_file=".girt/repository/${file}"
+    index_file=".girt/${branch}/index/${file}"
+    repo_file=".girt/${branch}/repository/${file}"
 
     if ! test -f $index_file
     then
@@ -46,14 +52,14 @@ do
 done
 
 
-if test $( ls .girt/index/ | wc -l ) -gt 0
+if test $( ls .girt/${branch}/index/ | wc -l ) -gt 0
 then
-    for file in .girt/index/*
+    for file in .girt/${branch}/index/*
     do
-        filename=$( echo $file | cut -d'/' -f3 )
+        filename=$( echo $file | cut -d'/' -f4 )
         if ! test -f $filename
         then
-            if cmp -s $file ".girt/repository/${filename}"
+            if cmp -s $file ".girt/${branch}/repository/${filename}"
             then
                 echo "${filename} - file deleted" >> $status
             else
@@ -63,12 +69,12 @@ then
     done
 fi
 
-if test $( ls .girt/repository/ | wc -l ) -gt 0
+if test $( ls .girt/${branch}/repository/ | wc -l ) -gt 0
 then
-    for file in .girt/repository/*
+    for file in .girt/${branch}/repository/*
     do
-        filename=$( echo $file | cut -d'/' -f3 )
-        if ! test -f $filename && ! test -f ".girt/index/${filename}"
+        filename=$( echo $file | cut -d'/' -f4 )
+        if ! test -f $filename && ! test -f ".girt/${branch}/index/${filename}"
         then
             echo "${filename} - deleted" >> $status
         fi

@@ -6,6 +6,8 @@ then
 	echo "$0: error: girt repository directory .girt not found"
 	exit 1
 fi
+# get branch
+branch=$( cat .girt/branch )
 
 # Get commit message
 commit_msg=""
@@ -41,9 +43,9 @@ fi
 
 if test "$a" = "true"
 then
-	for file in .girt/index/*
+	for file in .girt/${branch}/index/*
 	do
-		filename=$( echo "$file" | cut -d'/' -f3 ) 	# get target file
+		filename=$( echo "$file" | cut -d'/' -f4 ) 	# get target file
 		if test -f "$filename"
 		then
 			cp "$filename" "$file"					# add to index
@@ -53,7 +55,7 @@ fi
 
 
 # The girt-commit command saves a copy of all files in the index to the repository.
-logs=".girt/logs"
+logs=".girt/${branch}/logs"
 commit_no=$( cat "$logs" | wc -l )
 nothing_to_commit="true"
 # compare file in index with last commit
@@ -61,14 +63,14 @@ if test "$commit_no" -gt 0
 then
 	last_commit_no=$(( commit_no - 1 ))
 	# last commit is not empty
-	if test $( ls .girt/commit_${last_commit_no} | wc -l ) -gt 0
+	if test $( ls .girt/${branch}/commit_${last_commit_no} | wc -l ) -gt 0
 	then 
 		# iterate file last commit and compare with file in index
-		for file in .girt/commit_${last_commit_no}/*
+		for file in .girt/${branch}/commit_${last_commit_no}/*
 		do
-			filename=$( echo "$file" | cut -d'/' -f3 )
-			index_file=".girt/index/${filename}"
-			repo_file=".girt/repository/${filename}"
+			filename=$( echo "$file" | cut -d'/' -f4 )
+			index_file=".girt/${branch}/index/${filename}"
+			repo_file=".girt/${branch}/repository/${filename}"
 			# file does not exist in index, but not in last commit
 			# should also be removed from repo
 			if ! test -f $index_file
@@ -89,13 +91,13 @@ then
 	fi
 
 	
-	if test $( ls .girt/index | wc -l ) -gt 0
+	if test $( ls .girt/${branch}/index | wc -l ) -gt 0
 	then 
 		# iterate file in index to compare with last commit file
-		for file in .girt/index/*
+		for file in .girt/${branch}/index/*
 		do
-			filename=$( echo "$file" | cut -d'/' -f3 )
-			last_commit_file=".girt/commit_${last_commit_no}/${filename}"
+			filename=$( echo "$file" | cut -d'/' -f4 )
+			last_commit_file=".girt/$branch/commit_${last_commit_no}/${filename}"
 			if test -f "$last_commit_file"
 			then
 				if ! cmp -s $file $last_commit_file
@@ -119,7 +121,7 @@ then
 fi
 
 # commit before add will raise usage error (when index is empty)
-index_size=$( ls .girt/index |wc -l )
+index_size=$( ls .girt/${branch}/index |wc -l )
 if test "$index_size" -eq 0 && $nothing_to_commit = "true"
 then
 	echo "nothing to commit"
@@ -127,18 +129,18 @@ then
 fi
 
 # copy from index to repository
-commit_dir=".girt/commit_${commit_no}"
+commit_dir=".girt/${branch}/commit_${commit_no}"
 mkdir "$commit_dir"
-if test $( ls .girt/index/ | wc -l ) -gt 0
+if test $( ls .girt/${branch}/index/ | wc -l ) -gt 0
 then
-	for file in .girt/index/*
+	for file in .girt/${branch}/index/*
 	do
 		# commit to repo
-		filename=$( echo "$file" | cut -d'/' -f3 )
-		dest=".girt/repository/${filename}"
+		filename=$( echo "$file" | cut -d'/' -f4 )
+		dest=".girt/${branch}/repository/${filename}"
 		cp "$file" "$dest"
 		# save commit version
-		cp "$file" "${commit_dir}/${filename}"
+		cp "$file" ".girt/${branch}/commit_${commit_no}/${filename}"
 	done
 fi
 

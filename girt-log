@@ -7,4 +7,7 @@ then
 	exit 1
 fi
 
-tac .girt/logs
+# get branch
+branch=$( cat .girt/branch )
+
+tac .girt/${branch}/logs

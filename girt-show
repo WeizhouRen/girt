@@ -13,36 +13,38 @@ then
 	exit 1
 fi
 
+# get branch
+branch=$( cat .girt/branch )
+
+# initialize variables
 expected_file=$( echo $1 | cut -d':' -f2 )
 commit_no=$( echo $1 | cut -d':' -f1 )
-
-
 
 # If commit is omitted, the contents of the file in the index should be printed.
 if test ${#commit_no} -eq 0 # ommit commit
 then
 	# test if file has been added (is in index)
-	if ! test -f ".girt/index/$expected_file"
+	if ! test -f ".girt/${branch}/index/$expected_file"
 	then
 		echo "girt-show: error: '${expected_file}' not found in index"
 		exit 1
 	fi
-	cat ".girt/index/${expected_file}"
+	cat ".girt/${branch}/index/${expected_file}"
 	exit 0
 else
 	# check commit exists
-	if ! test -d ".girt/commit_${commit_no}"
+	if ! test -d ".girt/${branch}/commit_${commit_no}"
 	then
 		echo "girt-show: error: unknown commit '${commit_no}'"
 		exit 1
 	else
 		# test file has been commit
-		if ! test -f ".girt/commit_${commit_no}/${expected_file}"
+		if ! test -f ".girt/${branch}/commit_${commit_no}/${expected_file}"
 		then
 			echo "girt-show: error: '${expected_file}' not found in commit ${commit_no}"
 			exit 1
 		else
-			cat ".girt/commit_${commit_no}/${expected_file}"
+			cat ".girt/${branch}/commit_${commit_no}/${expected_file}"
 			exit 0
 		fi
 	fi

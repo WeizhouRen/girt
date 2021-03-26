@@ -13,6 +13,8 @@ then
 	exit 1
 fi
 
+# get branch
+branch=$( cat .girt/branch )
 # iterate all args
 for file in "$@"
 do
@@ -33,7 +35,8 @@ do
 
 	# file no exists in both working direcotry and index
 	# "girt-add: error: cannot open 'filename'"
-	if ! test -f "$file" && ! test -f ".girt/index/${file}"
+	index=".girt/${branch}/index/${file}"
+	if ! test -f "$file" && ! test -f "$index"
 	then
 		echo "girt-add: error: can not open '${file}'"
 		exit 1
@@ -41,13 +44,12 @@ do
 
 	# file has been removed in working directory, but exists in index
 	# remove the file in index as well
-	if ! test -f "$file" && test -f ".girt/index/${file}"
+	if ! test -f "$file" && test -f "$index"
 	then
-		rm ".girt/index/${file}"
+		rm "$index"
 		exit 0
 	fi
 
 	# add file to index
-	dest="./.girt/index/${file}"
-	cp "$file" "$dest"
+	cp "$file" "$index"
 done

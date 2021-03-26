@@ -23,7 +23,7 @@ echo "line 2" >> a                          # update a
 echo "line 1" > b  
 ./girt-commit -a -m 'test commit'    # update a in index with content of a in root 
 cat a
-cat .girt/index/a 
+cat .girt/master/index/a 
 
 
 echo "|---------- Special cases -----------------|"              
