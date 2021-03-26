@@ -31,3 +31,9 @@
 |          |       |        |             | Need doing comparison between file in index and repository to decided if the changes has been staged          |
 |          |       |        |             | before removed.                                                                                               |
 +----------+-------+--------+-------------+---------------------------------------------------------------------------------------------------------------+
+| 26/03/20 | 14:50 | 16:27  | coding      | Implement girt-branch: edit previous command files to do all operations under master directory, where master  |
+|          |       |        |             | is created when initialisation. Tracking files in specific branch by doing operation under corresponding      |
+|          |       |        |             | branch directory. Add new file 'branch' to record current branch.                                             |
++----------+-------+--------+-------------+---------------------------------------------------------------------------------------------------------------+
+|          | 16:30 | 16:44  | coding      | Implement girt-checkout                                                                                       |
++----------+-------+--------+-------------+---------------------------------------------------------------------------------------------------------------+

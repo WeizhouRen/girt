@@ -51,9 +51,10 @@ then
 	touch .girt/${1}/logs				# create logs file
 elif test $# = 0
 then
+	# list all branches
 	for dir in .girt/*
 	do
-		if test -d $dir; then echo "$dir"; fi
+		if test -d $dir; then echo $( echo "$dir" | cut -d'/' -f2 ); fi
 	done | sort
 else
 	echo "usage: girt-branch [-d] <branch>"

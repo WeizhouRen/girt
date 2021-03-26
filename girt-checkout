@@ -1,0 +1,36 @@
+#!/bin/dash
+
+# test .girt exists
+if ! test -d .girt
+then
+	echo "$0: error: girt repository directory .girt not found"
+	exit 1
+fi
+
+# check if first commit exists
+if ! test -d ".girt/master/commit_0"
+then
+	echo "girt-branch: error: this command can not be run until after the first commit"
+	exit 1
+fi
+
+# test input
+if test $# -eq 1
+then
+    if echo $1 | grep -E -q '^-'
+    then
+        echo "usage: girt-checkout <branch>"
+        exit 1
+    elif ! test -d ".girt/${1}"
+    then
+        echo "girt-checkout: error: unknown branch '${1}'"
+        exit 1
+    else
+        # do checkout
+        echo $1 > ".girt/branch"
+        echo "Already on '${1}'"
+    fi
+else
+    echo "usage: girt-checkout <branch>"
+    exit 1
+fi
