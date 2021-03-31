@@ -59,6 +59,12 @@ then
         cp -R $file "${dest_wrk}/${file}"
         # update file in target branch working directory
         cp -R $file "${cur_wrk}/${file}"
+
+        # if file has been staged, should be staged in target branch as well
+        if cmp -s $file "${cur_idx}/${file}"
+        then
+            cp -R $file "${dest_idx}/${file}"
+        fi
     done
 
 else
@@ -109,20 +115,20 @@ else
         #           target branch will not load this file
         if ! test -f $dest_cmt_file
         then 
-            echo "------------------${filename}"
             # echo "current commit file not exist int target branch repo is ${cur_cmt_file}"
             rm -f $dest_wrk_file $dest_stg_file
             continue
         fi
 
         # CASE IV:  file has been committed in different branches, 
-        #           committed in current branch, file in target branch will
-        #           rollback to last commit version
-        if ! cmp -s $cur_cmt_file $dest_cmt_file && cmp -s $filename $cur_stg_file && cmp -s $filename $cur_cmt_file
+        #           changed in current branch but haven't commit yet, 
+        #           file in target branch will rollback to last commit version
+        #           if file staged in current branch, also need to update file in index in target  
+        if ! cmp -s $cur_cmt_file $dest_cmt_file && cmp -s $filename $cur_cmt_file
         then
             cp -R $dest_cmt_file $dest_wrk_file
+	        cp -R $dest_cmt_file $dest_stg_file
         fi
-
     done
 
 fi
