@@ -34,8 +34,9 @@ do
     esac
 done
 
-files=$( echo "$files" | sed 's/ $//' | tr ' ' '\n')
-echo "$files" | while read file
+echo "$files" | sed 's/ $//' | tr ' ' '\n' >files.txt
+
+while read -r file
 do
     index=".girt/${branch}/index/${file}"
     repo=".girt/${branch}/repository/${file}"
@@ -43,9 +44,14 @@ do
     if ! test -f "$file" || ! test -f "$index"
     then 
         echo "girt-rm: error: '${file}' is not in the girt repository"
+        rm files.txt
         exit 1
     fi
+done < files.txt
 
+
+while read -r file
+do
     # when force is specified, remove file directly
     if test "$force" = "true"
     then
@@ -67,7 +73,6 @@ do
         if test $cached = "true"
         then
             rm $index
-            # echo "remvoe ${file} in 75"
         else 
             echo "girt-rm: error: '${file}' has staged changes in the index"
         fi
@@ -90,14 +95,14 @@ do
     # CASE IV : file in three directories are same
     elif cmp -s "$file" "$index" && cmp -s "$index" "$repo"
     then
-        # echo "file is ${file}"
         # only remove from index with --cache
         if test "$cached" = "true"
         then
-            # echo "remvoe ${index} in index in 94"
             rm "$index"
         else
             rm "$file" "$index"
         fi
     fi
-done
+done < files.txt
+
+rm files.txt
