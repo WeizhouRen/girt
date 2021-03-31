@@ -109,6 +109,7 @@ else
         #           target branch will not load this file
         if ! test -f $dest_cmt_file
         then 
+            echo "------------------${filename}"
             # echo "current commit file not exist int target branch repo is ${cur_cmt_file}"
             rm -f $dest_wrk_file $dest_stg_file
             continue

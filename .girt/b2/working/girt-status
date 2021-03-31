@@ -1,0 +1,85 @@
+#!/bin/dash
+
+# test .girt exists
+if ! test -d .girt
+then
+	echo "$0: error: girt repository directory .girt not found"
+	exit 1
+fi
+
+# get branch
+branch=$( cat .girt/branch )
+
+# initialize tmp file
+status="tmp/status.txt"
+mkdir tmp && touch $status
+
+# get all files
+for file in *
+do  
+    if ! test -f $file; then continue; fi
+    index_file=".girt/${branch}/index/${file}"
+    repo_file=".girt/${branch}/repository/${file}"
+
+    if ! test -f $index_file
+    then
+        echo "${file} - untracked" >> $status
+    elif ! test -f $repo_file && cmp -s $file $index_file
+    then
+        echo "${file} - added to index" >> $status
+    elif ! test -f $repo_file && ! cmp -s $file $index_file
+    then
+        echo "${file} - added to index, file changed" >> $status
+    # file staged with changes after commit , and added changes
+    elif ! cmp -s $file $index_file && ! cmp -s $index_file $repo_file
+    then
+        echo "${file} - file changed, different changes staged for commit" >> $status
+    # file committed, and staged with new changes
+    elif cmp -s $file $index_file
+    then
+	    # no changes after commit
+        if cmp -s $index_file $repo_file
+        then
+            echo "${file} - same as repo" >> $status
+        else
+            echo "${file} - file changed, changes staged for commit" >> $status
+        fi
+    # file chagnes after commit
+    elif ! cmp -s $file $index_file && cmp -s $index_file $repo_file
+    then
+        echo "${file} - file changed, changes not staged for commit" >> $status
+    fi
+done
+
+
+if test $( ls .girt/${branch}/index/ | wc -l ) -gt 0
+then
+    for file in .girt/${branch}/index/*
+    do
+        filename=$( echo $file | cut -d'/' -f4 )
+        if ! test -f $filename
+        then
+            if cmp -s $file ".girt/${branch}/repository/${filename}"
+            then
+                echo "${filename} - file deleted" >> $status
+            else
+                echo "${filename} - added to index, file deleted" >> $status
+            fi
+        fi
+    done
+fi
+
+if test $( ls .girt/${branch}/repository/ | wc -l ) -gt 0
+then
+    for file in .girt/${branch}/repository/*
+    do
+        filename=$( echo $file | cut -d'/' -f4 )
+        if ! test -f $filename && ! test -f ".girt/${branch}/index/${filename}"
+        then
+            echo "${filename} - deleted" >> $status
+        fi
+    done
+fi
+
+cat $status | sort
+rm -rf tmp
