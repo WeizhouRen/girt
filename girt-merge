@@ -1,0 +1,15 @@
+#!/bin/dash
+
+# test .girt exists
+if ! test -d .girt
+then
+	echo "$0: error: girt repository directory .girt not found"
+	exit 1
+fi
+
+# test input
+if ! test $# = 2
+then
+    echo "usage: girt-merge <branch|commit> -m message"
+    exit 1
+fi

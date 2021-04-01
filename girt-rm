@@ -52,6 +52,8 @@ done < files.txt
 
 while read -r file
 do
+    index=".girt/${branch}/index/${file}"
+    repo=".girt/${branch}/repository/${file}"
     # when force is specified, remove file directly
     if test "$force" = "true"
     then
@@ -61,7 +63,7 @@ do
         else
             rm "$index" "$file"
         fi
-        exit 1
+        continue
     fi
 
     # Do comparison among current directory and index and repository
@@ -78,7 +80,7 @@ do
         fi
     
     # CASE II : file in index is different from working directory file and repo directory file
-    elif ! cmp -s "$file" "$index" && ! cmp -s "$index" "$repo"
+    elif ! cmp -s "$index" "$file" && ! cmp -s "$index" "$repo"
     then
         echo "girt-rm: error: '"$file"' in index is different to both to the working file and the repository"
     

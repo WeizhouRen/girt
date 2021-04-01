@@ -7,7 +7,7 @@ then
 else
 	mkdir .girt
 	echo 'master' > .girt/branch		# create file to record branches
-	echo '0' > .girt/commit				# record commit number
+	touch .girt/commit				# record commit number
 	mkdir -p .girt/master/index			# create index folder
 	mkdir -p .girt/master/repository 	# create repository folder
 	mkdir -p .girt/master/working		# save current working directory when chekcout

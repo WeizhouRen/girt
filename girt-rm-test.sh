@@ -75,22 +75,48 @@ clear
 ###################################################
 
 
+# ./girt-init
+# # Initialized empty girt repository in .girt
+# echo 1 >a
+# echo 2 >b
+# echo 3 >c
+# ./girt-add a b c
+# ./girt-commit -m "first commit"
+# # Committed as commit 0
+# echo 4 >>a
+# echo 5 >>b
+# echo 6 >>c
+# echo 7 >d
+# echo 8 >e
+# ./girt-add b c d e
+# echo 9 >b
+# echo 0 >d
+# ./girt-rm --cached a c
+# # ./girt-rm --force --cached b
+# # ./girt-rm --force --cached e
+
+
+
+
+# test subset1_16
+
+
 ./girt-init
 # Initialized empty girt repository in .girt
 echo 1 >a
 echo 2 >b
-echo 3 >c
-./girt-add a b c
+./girt-add a b
 ./girt-commit -m "first commit"
 # Committed as commit 0
-echo 4 >>a
-echo 5 >>b
-echo 6 >>c
-echo 7 >d
-echo 8 >e
-./girt-add b c d e
-echo 9 >b
-echo 0 >d
-./girt-rm --cached a c
-# ./girt-rm --force --cached b
-# ./girt-rm --force --cached e
+echo 3 >c
+echo 4 >d
+./girt-add c d
+# ./girt-rm --cached  a c
+# ./girt-commit -m "second commit"
+# # Committed as commit 1
+# ./girt-show 0:a
+# # 1
+# ./girt-show 1:a
+# # ./girt-show: error: 'a' not found in commit 1
+# ./girt-show :a
+# # ./girt-show: error: 'a' not found in index

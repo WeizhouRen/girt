@@ -61,7 +61,7 @@ fi
 logs=".girt/${branch}/logs"
 commit_time=$( cat "$logs" | wc -l )
 nothing_to_commit="true"
-commit_no=$( cat .girt/commit )
+commit_no=$( cat .girt/commit |wc -l)
 # compare file in index with last commit
 if test "$commit_time" -gt 0
 then
@@ -154,5 +154,5 @@ echo "Committed as commit ${commit_no}"
 # append info to logs file and update commit counter file
 content="${commit_no} ${commit_msg}"
 echo "${content}" >> $logs
-commit_no=$(( commit_no + 1 ))
-echo "${commit_no}" > .girt/commit
+# commit_no=$(( commit_no + 1 ))
+echo "${commit_no} ${branch}" >> .girt/commit
