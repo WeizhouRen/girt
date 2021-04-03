@@ -71,7 +71,7 @@ else
     if test $common -eq $cur_lst_cmt
     then
         # FAST FORWARD: no commit created
-        rm -rf $cur_repo $cur_index *
+        rm -rf $cur_repo $cur_index $cur_wrk *
         cp -R $tgt_repo $cur_repo
         cp -R $tgt_index $cur_index
         cp -R $tgt_wrk $cur_wrk

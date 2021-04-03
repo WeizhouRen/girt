@@ -1,32 +1,5 @@
 
 ######### subset_2_28 ###########
-rm -rf .girt
-./girt-init
-# Initialized empty girt repository in .girt
-echo hello >a
-./girt-add a
-./girt-commit -m commit-A
-# Committed as commit 0
-./girt-branch branch1
-./girt-checkout branch1
-# Switched to branch 'branch1'
-echo world >b
-./girt-add b
-./girt-commit -a -m commit-B
-# Committed as commit 1
-./girt-checkout master
-# Switched to branch 'master'
-
-./girt-branch -d branch1
-# girt-branch: error: branch 'branch1' has unmerged changes
-# ./girt-merge branch1 -m merge-message
-# Fast-forward: no commit created
-# ./girt-branch -d branch1
-# Deleted branch 'branch1'
-./girt-branch
-# master
-
-######### subset_2_29 ###########
 # rm -rf .girt
 # ./girt-init
 # # Initialized empty girt repository in .girt
@@ -34,15 +7,42 @@ echo world >b
 # ./girt-add a
 # ./girt-commit -m commit-A
 # # Committed as commit 0
-# ./girt-branch branchA
+# ./girt-branch branch1
+# ./girt-checkout branch1
+# # Switched to branch 'branch1'
 # echo world >b
 # ./girt-add b
-# ./girt-commit -m commit-B
+# ./girt-commit -a -m commit-B
 # # Committed as commit 1
-# ./girt-checkout branchA
-# # Switched to branch 'branchA'
-# echo new contents >b
 # ./girt-checkout master
+# # Switched to branch 'master'
+
+# ./girt-branch -d branch1
+# # girt-branch: error: branch 'branch1' has unmerged changes
+# ./girt-merge branch1 -m merge-message
+# # Fast-forward: no commit created
+# ./girt-branch -d branch1
+# # Deleted branch 'branch1'
+# ./girt-branch
+# # master
+
+######### subset_2_29 ###########
+rm -rf .girt
+./girt-init
+# Initialized empty girt repository in .girt
+echo hello >a
+./girt-add a
+./girt-commit -m commit-A
+# Committed as commit 0
+./girt-branch branchA
+echo world >b
+./girt-add b
+./girt-commit -m commit-B
+# Committed as commit 1
+./girt-checkout branchA
+# Switched to branch 'branchA'
+echo new contents >b
+./girt-checkout master
 # # girt-checkout: error: Your changes to the following files would be overwritten by checkout:
 # # b
 # ./girt-add b

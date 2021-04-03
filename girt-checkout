@@ -68,8 +68,7 @@ then
 else
 # repositories are different
     overwritten="false"
-    echo "girt-checkout: error: Your changes to the following files would be overwritten by checkout:" > overwritten_files
-
+    touch overwritten_files
     for cur_cmt_file in $cur_repo/*
     do
         filename=$(echo $cur_cmt_file |cut -d'/' -f4)
@@ -81,18 +80,37 @@ else
         # CASE II:  file has been committed in different branches, 
         #           changed and staged in current branch, but have not committed yet
         #           raise error for overwritten
-      
-        if ! cmp -s $cur_cmt_file $dest_cmt_file && cmp -s $filename $cur_stg_file && ! cmp -s $filename $cur_cmt_file
+        if ! cmp -s $cur_cmt_file $dest_cmt_file && ! cmp -s $filename $cur_cmt_file && cmp -s $filename $cur_stg_file 
         then
+            echo           
             overwritten="true"
             echo $filename >> overwritten_files
         fi
 
     done
 
+    for dest_cmt_file in $dest_repo/*
+    do
+        filename=$(echo $dest_cmt_file |cut -d'/' -f4)
+        cur_cmt_file="${cur_repo}/${filename}"
+        dest_wrk_file="${dest_wrk}/${filename}"
+        dest_stg_file="${dest_idx}/${filename}"
+        cur_stg_file="${curt_idx}/${filename}"
+        cur_wrk_file="${cur_wrk}/${filename}"
+        # CASE II:  file has been committed in target branch but have not commit 
+        #           in current branch, in other words, file does not exist in 
+        #           current repository directory, will raise error for overwritten
+        if ! test -f $cur_cmt_file
+        then 
+            overwritten="true"
+            echo $filename >> overwritten_files
+        fi
+    done
+
     if test $overwritten = "true"
     then
-        cat $overwritten_files
+        echo "girt-checkout: error: Your changes to the following files would be overwritten by checkout:"
+        cat overwritten_files |sort -u
         rm overwritten_files
         exit 1
     fi
@@ -119,7 +137,7 @@ else
         fi
 
         # CASE IV:  file has been committed in different branches, 
-        #           changed in current branch but haven't commit yet, 
+        #           changed in current branch but commit,
         #           file in target branch will rollback to last commit version
         #           if file staged in current branch, also need to update file in index in target  
         if ! cmp -s $cur_cmt_file $dest_cmt_file && cmp -s $filename $cur_cmt_file
