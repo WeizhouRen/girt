@@ -7,9 +7,85 @@ then
 	exit 1
 fi
 
-# test input
-if ! test $# = 2
+# test incorrect input
+if ! test $# = 3 || ! test $2 = "-m" || echo $1 | grep -E -q '^-' || echo $3 | grep -E -q '^-'
 then
     echo "usage: girt-merge <branch|commit> -m message"
     exit 1
 fi
+
+# get current branch
+branch=$( cat .girt/branch )
+get_last_commit_number() 
+{
+    number=0
+    while read -r record
+    do
+        commit=$(echo "$record" |cut -d' ' -f1)
+        branch=$(echo "$record" |cut -d' ' -f2)
+        if test $branch = $1
+        then
+            number=$(echo $commit)
+        fi
+    done < .girt/commit
+    echo $number
+}
+
+get_common_commit()
+{
+    common=0
+    while test -d .girt/$1/commit_$common && test -d .girt/$2/commit_$common
+    do
+        common=$((common + 1))
+    done
+    echo $((common - 1))
+}
+# get incoming branch or commit
+merge_message="$3"
+cur_repo=.girt/$branch/repository
+cur_index=.girt/$branch/index
+cur_wrk=.girt/$branch/working
+cur_logs=.girt/logs
+if echo $1 | grep -E -q '^[0-9]$'
+then
+    
+    ############## DEAL WITH MERGE COMMIT ###################
+    # first arg is all number => commit number
+    # Steps:
+    #   1. find out branch the commit conducted
+    #   2. get commit files in target commit folder and load into current 
+    merge_commit=$1
+
+else
+    ############## DEAL WITH MERGE BRANCH ###################
+    # first arg is not a number => branch name
+    # Steps:
+    #   1. get bifurcation point of two branches
+    #   2. check if last commit number in current branch is larget than the bifurcation point
+    tgt_repo=.girt/$1/repository
+    tgt_index=.girt/$1/index
+    tgt_wrk=.girt/$1/working 
+    cur_lst_cmt=`get_last_commit_number $branch`
+    tgt_lst_cmt=`get_last_commit_number $1`
+    common=`get_common_commit $branch $1`
+    if test $common -eq $cur_lst_cmt
+    then
+        # FAST FORWARD: no commit created
+        rm -rf $cur_repo $cur_index *
+        cp -R $tgt_repo $cur_repo
+        cp -R $tgt_index $cur_index
+        cp -R $tgt_wrk $cur_wrk
+        # load file to current working directory
+        for file in $cur_wrk/*
+        do
+            cp -R $file .
+        done
+        echo "Fast-forward: no commit created"
+    else
+        # ERROR: cannot merge
+        echo "girt-merge: error: can not merge"
+    fi
+fi
+
+
+

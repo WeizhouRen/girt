@@ -53,19 +53,17 @@ if test "$cmp_repo" = ""
 then
     # CASE I:   repositories are same, changes in current branch
     #           will work in target branch as well
+
+    # copy working directory and index directory
+    rm -rf $dest_wrk $cur_wrk $dest_idx
+    mkdir $cur_wrk
+    # update cur_work
     for file in *
     do
-        # update file in current working directory inside branch directory
-        cp -R $file "${dest_wrk}/${file}"
-        # update file in target branch working directory
         cp -R $file "${cur_wrk}/${file}"
-
-        # if file has been staged, should be staged in target branch as well
-        if cmp -s $file "${cur_idx}/${file}"
-        then
-            cp -R $file "${dest_idx}/${file}"
-        fi
     done
+    cp -R $cur_wrk $dest_wrk
+    cp -R $cur_idx $dest_idx
 
 else
 # repositories are different
