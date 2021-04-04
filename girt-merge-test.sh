@@ -39,32 +39,32 @@ cd test-girt
 
 
 ######### subset_2_26 ###########
-../girt-init
-# Initialized empty girt repository in .girt
-echo hello >a
-../girt-add a
-../girt-commit -m commit-A
-# Committed as commit 0
-../girt-branch b1
-echo world >>a
-../girt-checkout b1
-# Switched to branch 'b1'
-../girt-status
-# a - file changed, changes not staged for commit
-../girt-checkout master
-# Switched to branch 'master'
-../girt-add a
-../girt-status
-# a - file changed, changes staged for commit
-../girt-checkout b1
-# Switched to branch 'b1'
-../girt-status
-# a - file changed, changes staged for commit
-../girt-checkout master
-# Switched to branch 'master'
-../girt-commit -a -m commit-B
-# Committed as commit 1
-../girt-checkout b1
+# ../girt-init
+# # Initialized empty girt repository in .girt
+# echo hello >a
+# ../girt-add a
+# ../girt-commit -m commit-A
+# # Committed as commit 0
+# ../girt-branch b1
+# echo world >>a
+# ../girt-checkout b1
+# # Switched to branch 'b1'
+# ../girt-status
+# # a - file changed, changes not staged for commit
+# ../girt-checkout master
+# # Switched to branch 'master'
+# ../girt-add a
+# ../girt-status
+# # a - file changed, changes staged for commit
+# ../girt-checkout b1
+# # Switched to branch 'b1'
+# ../girt-status
+# # a - file changed, changes staged for commit
+# ../girt-checkout master
+# # Switched to branch 'master'
+# ../girt-commit -a -m commit-B
+# # Committed as commit 1
+# ../girt-checkout b1
 # # Switched to branch 'b1'
 # ../girt-status
 # # a - same as repo

@@ -40,6 +40,7 @@ get_common_commit()
     done
     echo $((common - 1))
 }
+
 # get incoming branch or commit
 merge_message="$3"
 cur_repo=.girt/$branch/repository
@@ -115,6 +116,7 @@ else
             # CASE IV:  files have different edition => ERROR: cannot merge
             else
                 echo "girt-merge: error: can not merge"
+                rm -rf tmp-merged
                 exit 1
             fi
         done
@@ -153,15 +155,22 @@ else
         do
             cp $file .
         done
-        rm -rf tmp-merged
+        
         # save commit version
         commit_no=$( cat .girt/commit |wc -l)
         commit_dir=".girt/${branch}/commit_${commit_no}"
         cp -R tmp-merged $commit_dir
-        # update commit log and current log
+        rm -rf tmp-merged
+        # update commit logs file in current branch
+        cur_logs=.girt/${branch}/logs
+        tar_logs=.girt/${1}/logs
         echo "Committed as commit ${commit_no}"
         content="${commit_no} ${merge_message}"
-        echo "${content}" >> .girt/${branch}/logs
+        echo "${content}" >> $cur_logs
+        sort -u $cur_logs $tar_logs > tmp_logs.txt
+        cp tmp_logs.txt $cur_logs
+        rm tmp_logs.txt
+        # update global logs file
         echo "${commit_no} ${branch}" >> .girt/commit
     fi
 fi
