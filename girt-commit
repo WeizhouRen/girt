@@ -154,5 +154,4 @@ echo "Committed as commit ${commit_no}"
 # append info to logs file and update commit counter file
 content="${commit_no} ${commit_msg}"
 echo "${content}" >> $logs
-# commit_no=$(( commit_no + 1 ))
 echo "${commit_no} ${branch}" >> .girt/commit

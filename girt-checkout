@@ -66,7 +66,7 @@ then
     cp -R $cur_idx $dest_idx
 
 else
-# repositories are different
+    # repositories are different
     overwritten="false"
     touch overwritten_files
     for cur_cmt_file in $cur_repo/*
@@ -78,11 +78,11 @@ else
         cur_stg_file="${curt_idx}/${filename}"
         cur_wrk_file="${cur_wrk}/${filename}"
         # CASE II:  file has been committed in different branches, 
-        #           changed and staged in current branch, but have not committed yet
+        #           changed or staged in current branch, but have not committed yet
         #           raise error for overwritten
-        if ! cmp -s $cur_cmt_file $dest_cmt_file && ! cmp -s $filename $cur_cmt_file && cmp -s $filename $cur_stg_file 
+        if ! cmp -s $cur_cmt_file $dest_cmt_file && ! cmp -s $filename $cur_cmt_file # && cmp -s $filename $cur_stg_file 
         then
-            echo           
+            # echo "overwritten in case ii"
             overwritten="true"
             echo $filename >> overwritten_files
         fi
@@ -97,11 +97,13 @@ else
         dest_stg_file="${dest_idx}/${filename}"
         cur_stg_file="${curt_idx}/${filename}"
         cur_wrk_file="${cur_wrk}/${filename}"
-        # CASE II:  file has been committed in target branch but have not commit 
+        # CASE III: file has been committed in target branch but have not commit 
         #           in current branch, in other words, file does not exist in 
         #           current repository directory, will raise error for overwritten
-        if ! test -f $cur_cmt_file
+        if ! test -f $cur_cmt_file && test -f $filename # && ! cmp -s $filename $dest_cmt_file
+        # if test -f $filename && ! cmp -s $cur_cmt_file $dest_cmt_file && ! cmp -s $filename $dest_cmt_file
         then 
+            # echo "overwritten in case iii"
             overwritten="true"
             echo $filename >> overwritten_files
         fi
@@ -127,17 +129,16 @@ else
         dest_stg_file="${dest_idx}/${filename}"
         cur_stg_file="${curt_idx}/${filename}"
         cur_wrk_file="${cur_wrk}/${filename}"
-        # CASE III: file not exists in repository of target branch
+        # CASE IV:  file committed in current branch but not exists in repository of target branch
         #           target branch will not load this file
         if ! test -f $dest_cmt_file
         then 
-            # echo "current commit file not exist int target branch repo is ${cur_cmt_file}"
             rm -f $dest_wrk_file $dest_stg_file
             continue
         fi
 
-        # CASE IV:  file has been committed in different branches, 
-        #           changed in current branch but commit,
+        # CASE V:   file has been committed in different branches, 
+        #           changed in current branch and commit as well,
         #           file in target branch will rollback to last commit version
         #           if file staged in current branch, also need to update file in index in target  
         if ! cmp -s $cur_cmt_file $dest_cmt_file && cmp -s $filename $cur_cmt_file
@@ -150,7 +151,7 @@ else
 fi
 
 
-# load file from inside working directory to outside
+# load file from saved working directory to root working directory
 for file in *
 do
     cp -R $file "${cur_wrk}/${file}"

@@ -1,4 +1,78 @@
 
+rm -rf test-girt
+mkdir test-girt
+cd test-girt
+
+######### subset_2_24 ###########
+# ../girt-init
+# # Initialized empty girt repository in .girt
+# touch a
+# ../girt-add a
+# ../girt-commit -m commit-0
+# # Committed as commit 0
+# ../girt-branch b1
+# ../girt-checkout b1
+# # Switched to branch 'b1'
+# touch b
+# ../girt-add b
+# ../girt-commit -m commit-1
+# # Committed as commit 1
+# ../girt-checkout master
+# # Switched to branch 'master'
+# ../girt-branch b2
+# ../girt-checkout b2
+# # Switched to branch 'b2'
+# touch c
+# ../girt-add c
+# ../girt-commit -m commit-2
+# # Committed as commit 2
+# ../girt-branch
+# # b1
+# # b2
+# # master
+# ../girt-checkout b1
+# # Switched to branch 'b1'
+# ../girt-checkout master
+# # Switched to branch 'master'
+# ../girt-checkout non-existent-branch
+# # ../girt-checkout: error: unknown branch 'non-existent-branch'
+
+
+######### subset_2_26 ###########
+../girt-init
+# Initialized empty girt repository in .girt
+echo hello >a
+../girt-add a
+../girt-commit -m commit-A
+# Committed as commit 0
+../girt-branch b1
+echo world >>a
+../girt-checkout b1
+# Switched to branch 'b1'
+../girt-status
+# a - file changed, changes not staged for commit
+../girt-checkout master
+# Switched to branch 'master'
+../girt-add a
+../girt-status
+# a - file changed, changes staged for commit
+../girt-checkout b1
+# Switched to branch 'b1'
+../girt-status
+# a - file changed, changes staged for commit
+../girt-checkout master
+# Switched to branch 'master'
+../girt-commit -a -m commit-B
+# Committed as commit 1
+../girt-checkout b1
+# # Switched to branch 'b1'
+# ../girt-status
+# # a - same as repo
+# ../girt-checkout master
+# # Switched to branch 'master'
+# ../girt-status
+# # a - same as repo
+
 ######### subset_2_28 ###########
 # rm -rf .girt
 # ./girt-init
@@ -27,90 +101,90 @@
 # # master
 
 ######### subset_2_29 ###########
-rm -rf .girt
-./girt-init
-# Initialized empty girt repository in .girt
-echo hello >a
-./girt-add a
-./girt-commit -m commit-A
-# Committed as commit 0
-./girt-branch branchA
-echo world >b
-./girt-add b
-./girt-commit -m commit-B
-# Committed as commit 1
-./girt-checkout branchA
-# Switched to branch 'branchA'
-echo new contents >b
-./girt-checkout master
+# rm -rf .girt
+# ../girt-init
+# # Initialized empty girt repository in .girt
+# echo hello >a
+# ../girt-add a
+# ../girt-commit -m commit-A
+# # Committed as commit 0
+# ../girt-branch branchA
+# echo world >b
+# ../girt-add b
+# ../girt-commit -m commit-B
+# # Committed as commit 1
+# ../girt-checkout branchA
+# # Switched to branch 'branchA'
+# echo new contents >b
+# ../girt-checkout master
 # # girt-checkout: error: Your changes to the following files would be overwritten by checkout:
 # # b
-# ./girt-add b
-# ./girt-commit -m commit-C
+# ../girt-add b
+# ../girt-commit -m commit-C
 # # Committed as commit 2
-# ./girt-checkout master
+# ../girt-checkout master
 # # Switched to branch 'master'
 
 
 # ######### subset_2_30 ###########
-# ./girt-init
+# ../girt-init
 # # Initialized empty girt repository in .girt
 # seq 1 7 >7.txt
-# ./girt-add 7.txt
-# ./girt-commit -m commit-0
+# ../girt-add 7.txt
+# ../girt-commit -m commit-0
 # # Committed as commit 0
-# ./girt-branch b1
-# ./girt-checkout b1
+# ../girt-branch b1
+# ../girt-checkout b1
 # # Switched to branch 'b1'
 # perl -pi -e s/2/42/ 7.txt
-# ./girt-commit -a -m commit-1
+# ../girt-commit -a -m commit-1
 # # Committed as commit 1
-# ./girt-checkout master
+# ../girt-checkout master
 # # Switched to branch 'master'
-# ./girt-merge b1 -m merge-message
+# ../girt-merge b1 -m merge-message
 # # Fast-forward: no commit created
-# ./girt-log
+# ../girt-log
 # # 1 commit-1
 # # 0 commit-0
-# ./girt-status
+# ../girt-status
 # # 7.txt - same as repo
 
 
 # ######### subset_2_31 ###########
-# ./girt-init
+# ../girt-init
 # # Initialized empty girt repository in .girt
 # seq -f "line %.0f" 1 7 >a
 # seq -f "line %.0f" 1 7 >b
 # seq -f "line %.0f" 1 7 >c
 # seq -f "line %.0f" 1 7 >d
-# ./girt-add a b c d
-# ./girt-commit -m commit-0
+# ../girt-add a b c d
+# ../girt-commit -m commit-0
 # # Committed as commit 0
-# ./girt-branch b1
-# ./girt-checkout b1
+# ../girt-branch b1
+# ../girt-checkout b1
 # # Switched to branch 'b1'
 # seq -f "line %.0f" 0 7 >a
 # seq -f "line %.0f" 1 8 >b
 # seq -f "line %.0f" 1 7 >e
-# ./girt-add e
-# ./girt-commit -a -m commit-1
+# ../girt-add e
+# ../girt-commit -a -m commit-1
 # # Committed as commit 1
-# ./girt-checkout master
+# ../girt-checkout master
 # # Switched to branch 'master'
 # sed -i 4d c
 # seq -f "line %.0f" 0 8 >d
 # seq -f "line %.0f" 1 7 >f
-# ./girt-add f
-# ./girt-commit -a -m commit-2
+# ../girt-add f
+# ../girt-commit -a -m commit-2
 # # Committed as commit 2
-# ./girt-merge b1 -m merge1
+# ../girt-merge b1 -m merge1
 # # Committed as commit 3
-# ./girt-log
+# ../girt-log
 # # 3 merge1
 # # 2 commit-2
 # # 1 commit-1
 # # 0 commit-0
-# ./girt-status
+# ../girt-status
 # # a - same as repo
 # # b - same as repo
 # # c - same as repo
