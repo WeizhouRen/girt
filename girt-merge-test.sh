@@ -75,29 +75,29 @@ cd test-girt
 
 ######### subset_2_28 ###########
 # rm -rf .girt
-# ./girt-init
+# ../girt-init
 # # Initialized empty girt repository in .girt
 # echo hello >a
-# ./girt-add a
-# ./girt-commit -m commit-A
+# ../girt-add a
+# ../girt-commit -m commit-A
 # # Committed as commit 0
-# ./girt-branch branch1
-# ./girt-checkout branch1
+# ../girt-branch branch1
+# ../girt-checkout branch1
 # # Switched to branch 'branch1'
 # echo world >b
-# ./girt-add b
-# ./girt-commit -a -m commit-B
+# ../girt-add b
+# ../girt-commit -a -m commit-B
 # # Committed as commit 1
-# ./girt-checkout master
+# ../girt-checkout master
 # # Switched to branch 'master'
 
-# ./girt-branch -d branch1
+# ../girt-branch -d branch1
 # # girt-branch: error: branch 'branch1' has unmerged changes
-# ./girt-merge branch1 -m merge-message
+# ../girt-merge branch1 -m merge-message
 # # Fast-forward: no commit created
-# ./girt-branch -d branch1
+# ../girt-branch -d branch1
 # # Deleted branch 'branch1'
-# ./girt-branch
+# ../girt-branch
 # # master
 
 ######### subset_2_29 ###########
@@ -151,6 +151,7 @@ cd test-girt
 
 
 # ######### subset_2_31 ###########
+# rm -rf .girt
 # ../girt-init
 # # Initialized empty girt repository in .girt
 # seq -f "line %.0f" 1 7 >a
@@ -191,6 +192,22 @@ cd test-girt
 # # d - same as repo
 # # e - same as repo
 # # f - same as repo
+# ../girt-merge b1 -m merge-b1
+# # Already up to date
+# ../girt-merge 1 -m merge-b1
+# # Already up to date
+# ../girt-merge 0 -m merge-b1
+# # Already up to date
+# ../girt-checkout b1
+# # Switched to branch 'b1'
+# ../girt-merge 0 -m merge-master
+# # Already up to date
+# ../girt-merge 1 -m merge-master
+# # Already up to date
+# ../girt-merge 3 -m merge-master
+# # Fast-forward: no commit created
+# ../girt-merge 2 -m merge-master
+# # Already up to date
 
 
 # ######### subset_2_32 ###########
@@ -250,86 +267,86 @@ cd test-girt
 
 
 # ######### subset_2_34 ###########
-# ./girt-init
-# # Initialized empty girt repository in .girt
-# echo 0 >level0
-# ./girt-add level0
-# ./girt-commit -m root
-# # Committed as commit 0
-# ./girt-branch b0
-# ./girt-branch b1
-# ./girt-checkout b0
-# # Switched to branch 'b0'
-# echo 0 >level1
-# ./girt-add level1
-# ./girt-commit -m 0
-# # Committed as commit 1
-# ./girt-checkout b1
-# # Switched to branch 'b1'
-# echo 1 >level1
-# ./girt-add level1
-# ./girt-commit -m 1
-# # Committed as commit 2
-# ./girt-checkout b0
-# # Switched to branch 'b0'
-# ./girt-branch b00
-# ./girt-branch b01
-# ./girt-checkout b1
-# # Switched to branch 'b1'
-# ./girt-branch b10
-# ./girt-branch b11
-# ./girt-checkout b00
-# # Switched to branch 'b00'
-# echo 00 >level2
-# ./girt-add level2
-# ./girt-commit -m 00
-# # Committed as commit 3
-# ./girt-checkout b01
-# # Switched to branch 'b01'
-# echo 01 >level2
-# ./girt-add level2
-# ./girt-commit -m 01
-# # Committed as commit 4
-# ./girt-checkout b10
-# # Switched to branch 'b10'
-# echo 10 >level2
-# ./girt-add level2
-# ./girt-commit -m 10
-# # Committed as commit 5
-# ./girt-checkout b11
-# # Switched to branch 'b11'
-# echo 11 >level2
-# ./girt-add level2
-# ./girt-commit -m 11
-# # Committed as commit 6
-# ./girt-checkout master
-# # Switched to branch 'master'
-# ./girt-log
-# # 0 root
-# ./girt-checkout b1
-# # Switched to branch 'b1'
-# ./girt-log
-# # 2 1
-# # 0 root
-# ./girt-checkout b01
-# # Switched to branch 'b01'
-# ./girt-log
-# # 4 01
-# # 1 0
-# # 0 root
-# ./girt-checkout b11
-# # Switched to branch 'b11'
-# ./girt-log
-# # 6 11
-# # 2 1
-# # 0 root
-# ./girt-checkout master
-# # Switched to branch 'master'
-# ./girt-merge b0 -m merge0
+../girt-init
+# Initialized empty girt repository in .girt
+echo 0 >level0
+../girt-add level0
+../girt-commit -m root
+# Committed as commit 0
+../girt-branch b0
+../girt-branch b1
+../girt-checkout b0
+# Switched to branch 'b0'
+echo 0 >level1
+../girt-add level1
+../girt-commit -m 0
+# Committed as commit 1
+../girt-checkout b1
+# Switched to branch 'b1'
+echo 1 >level1
+../girt-add level1
+../girt-commit -m 1
+# Committed as commit 2
+../girt-checkout b0
+# Switched to branch 'b0'
+../girt-branch b00
+../girt-branch b01
+../girt-checkout b1
+# Switched to branch 'b1'
+../girt-branch b10
+../girt-branch b11
+../girt-checkout b00
+# Switched to branch 'b00'
+echo 00 >level2
+../girt-add level2
+../girt-commit -m 00
+# Committed as commit 3
+../girt-checkout b01
+# Switched to branch 'b01'
+echo 01 >level2
+../girt-add level2
+../girt-commit -m 01
+# Committed as commit 4
+../girt-checkout b10
+# Switched to branch 'b10'
+echo 10 >level2
+../girt-add level2
+../girt-commit -m 10
+# Committed as commit 5
+../girt-checkout b11
+# Switched to branch 'b11'
+echo 11 >level2
+../girt-add level2
+../girt-commit -m 11
+# Committed as commit 6
+../girt-checkout master
+# Switched to branch 'master'
+../girt-log
+# 0 root
+../girt-checkout b1
+# Switched to branch 'b1'
+../girt-log
+# 2 1
+# 0 root
+../girt-checkout b01
+# Switched to branch 'b01'
+../girt-log
+# 4 01
+# 1 0
+# 0 root
+../girt-checkout b11
+# Switched to branch 'b11'
+../girt-log
+# 6 11
+# 2 1
+# 0 root
+../girt-checkout master
+# Switched to branch 'master'
+../girt-merge b0 -m merge0
+# Fast-forward: no commit created
+# ../girt-merge b00 -m merge00
 # # Fast-forward: no commit created
-# ./girt-merge b00 -m merge00
-# # Fast-forward: no commit created
-# ./girt-log
+# ../girt-log
 # # 3 00
 # # 1 0
-# 0 root
+# # 0 root

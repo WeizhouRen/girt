@@ -22,17 +22,19 @@ fi
 branch=$( cat .girt/branch )
 get_last_commit_no() 
 {
-    number=0
-    while read -r record
-    do
-        commit=$(echo "$record" |cut -d' ' -f1)
-        branch=$(echo "$record" |cut -d' ' -f2)
-        if test $branch = $1
-        then
-            number=$(echo $commit)
-        fi
-    done < .girt/commit
+    number=$( cat .girt/$1/logs |tail -1 |cut -d' ' -f1 )
     echo $number
+    # number=0
+    # while read -r record
+    # do
+    #     commit=$(echo "$record" |cut -d' ' -f1)
+    #     branch=$(echo "$record" |cut -d' ' -f2)
+    #     if test $branch = $1
+    #     then
+    #         number=$(echo $commit)
+    #     fi
+    # done < .girt/${1}/logs
+    # echo $number
 }
 
 get_branch_name()
@@ -52,162 +54,213 @@ get_branch_name()
 
 get_common_commit()
 {
-    common=0
-    while test -d .girt/$1/commit_$common && test -d .girt/$2/commit_$common
-    do
-        common=$((common + 1))
-    done
-    echo $((common - 1))
+    common=$(grep -Fxf .girt/$1/logs .girt/$2/logs |tail -1 |cut -d' ' -f1)
+    echo $common
 }
 
-# get incoming branch or commit
-merge_message="$3"
-cur_repo=.girt/$branch/repository
-cur_index=.girt/$branch/index
-cur_wrk=.girt/$branch/working
-cur_logs=.girt/$branch/logs
-mkdir tmp-merged
-if echo $1 | grep -E -q '^[0-9]$'
+merge_logs()
+{
+    while read -r line
+    do
+        commit=$(echo "$line" |cut -d' ' -f1)
+        if test $commit -gt $3; then break; fi
+        echo "$line" >> $cur_logs
+    done < $2
+    cat $1 |sort -u > tmp_logs
+    rm $1
+    cp tmp_logs $1
+    rm tmp_logs
+}
+
+target_commit=""
+target_branch=""
+if echo $1 | grep -E -q '^[0-9]*$'
 then
-    tar_branch=`get_branch_name $1`
-    if test $tar_branch = 0
-    then
-        echo "girt-merge: error: unknown commit '${1}'"
-        rm -rf tmp-merged
-        exit 1
-    fi
     ############## DEAL WITH MERGE COMMIT ###################
     # first arg is all number => commit number
     # Steps:
     #   1. find out branch the commit conducted
     #   2. get commit files in target commit folder and merge into current 
-    merge_commit=$1
-
+    
+    target_branch=`get_branch_name $1`
+    if test $target_branch = "0"
+    then
+        echo "girt-merge: error: unknown commit '${1}'"
+        exit 1
+    fi
+    target_commit=$1
 else
     ############## DEAL WITH MERGE BRANCH ###################
-
+    # first arg is not a number => branch name
+    # Steps:
+    #   1. get bifurcation point of two branches
+    #   2. merge last commit version into current branch
+    
     # check branch exists
     if ! test -d .girt/$1
     then
         echo "girt-merge: error: unknown branch '${1}'"
-        rm -rf tmp-merged
         exit 1
     fi
-
-    # first arg is not a number => branch name
-    # Steps:
-    #   1. get bifurcation point of two branches
-    #   2. check if last commit number in current branch is larget than the bifurcation point
-    tar_repo=.girt/$1/repository
-    tar_index=.girt/$1/index
-    tar_wrk=.girt/$1/working 
-    tar_logs=.girt/$1/logs
-    cur_lst_cmt=`get_last_commit_no $branch`
-    tar_lst_cmt=`get_last_commit_no $1`
-    common=`get_common_commit $branch $1`
-    if test $common -eq $cur_lst_cmt
-    then
-        # FAST FORWARD: no commit created
-        rm -rf $cur_repo $cur_index $cur_wrk *
-        cp -R $tar_repo $cur_repo
-        cp -R $tar_index $cur_index
-        cp -R $tar_wrk $cur_wrk
-        cp $tar_logs $cur_logs
-        # load file to current working directory
-        for file in $cur_wrk/*
-        do
-            cp -R $file .
-        done
-        echo "Fast-forward: no commit created"
-    else
-        # For the same file in two branches, if one of them is same as the file in the bifuraction commit point
-        # file can be merged => create tmp directory to save the merged repo, keep the last modified file
-        for cur_cmt_file in $cur_repo/*
-        do
-            file=$(echo $cur_cmt_file |rev |cut -d'/' -f1 |rev)
-            common_cmt_file=".girt/${branch}/commit_${common}/${file}"
-            tar_cmt_file="${tar_repo}/${file}"
-            tmp_file="tmp-merged/${file}"
-
-            # CASE VII: file in current repo does not exist in target repo and common repo
-            #           which means the file is added in current commit => save to tmp
-            if ! test -f $tar_cmt_file && ! test -f $common_cmt_file
-            then
-                cp $cur_cmt_file $tmp_file
-            
-            # CASE I:   file only edited in target branch, save target file into tmp
-            elif cmp -s $cur_cmt_file $common_cmt_file && ! cmp -s $tar_cmt_file $common_cmt_file
-            then
-                cp $tar_cmt_file $tmp_file
-            # CASE II:  file only edited in current branch, save current file into tmp
-            elif ! cmp -s $cur_cmt_file $common_cmt_file && cmp -s $tar_cmt_file $common_cmt_file
-            then
-                cp $cur_cmt_file $tmp_file
-            # CASE III: files are still same, save one of them
-            elif cmp -s $cur_cmt_file $tar_cmt_file
-            then
-                cp $cur_cmt_file $tmp_file
-            # CASE IV:  files have different edition => ERROR: cannot merge
-            else
-                echo "girt-merge: error: can not merge"
-                rm -rf tmp-merged
-                exit 1
-            fi
-        done
-
-        for tar_cmt_file in $tar_repo/*
-        do
-            file=$(echo $tar_cmt_file |rev |cut -d'/' -f1 |rev)
-            common_cmt_file=".girt/${branch}/commit_${common}/${file}"
-            cur_cmt_file="${cur_repo}/${file}"
-            tmp_file="tmp-merged/${file}"
-            # CASE V:   file created in target branch and does not exist in current branch
-            #           will be saved into tmp
-            if ! test -f $common_cmt_file
-            then
-                cp $tar_cmt_file $tmp_file
-            # else ! test -f $common_cmt_file && 
-            fi
-            # CASE VI:  file is deleted from current branch, but still exists in target branch
-            #           should not be merged into tmp => do nothing
-        done
-
-        # update files in current repository folder
-        rm -rf $cur_repo
-        cp -R tmp-merged $cur_repo
-        # update staged file
-        rm -rf $cur_index
-        cp -R tmp-merged $cur_index
-        # update file in current working directory
-        for file in *
-        do
-            if test $file = "tmp-merged"; then continue; fi
-            rm -rf $file
-        done
-        
-        for file in tmp-merged/*
-        do
-            cp $file .
-        done
-        
-        # save commit version
-        commit_no=$( cat .girt/commit |wc -l)
-        commit_dir=".girt/${branch}/commit_${commit_no}"
-        cp -R tmp-merged $commit_dir
-        rm -rf tmp-merged
-        # update commit logs file in current branch
-        cur_logs=.girt/${branch}/logs
-        tar_logs=.girt/${1}/logs
-        echo "Committed as commit ${commit_no}"
-        content="${commit_no} ${merge_message}"
-        echo "${content}" >> $cur_logs
-        sort -u $cur_logs $tar_logs > tmp_logs.txt
-        cp tmp_logs.txt $cur_logs
-        rm tmp_logs.txt
-        # update global logs file
-        echo "${commit_no} ${branch}" >> .girt/commit
-    fi
+    target_branch=$1
+    target_commit=`get_last_commit_no $target_branch`
 fi
 
+# CASE IX:  target branch is current branch, merge self => already up to date
+if test $branch = $target_branch
+then
+    echo "Already up to date"
+    exit 0
+fi
 
+# initialize golobal variables
+cur_repo=.girt/$branch/repository
+cur_index=.girt/$branch/index
+cur_wrk=.girt/$branch/working
+cur_logs=.girt/$branch/logs
 
+tar_repo=.girt/$target_branch/commit_$target_commit
+tar_index=.girt/$target_branch/index
+tar_wrk=.girt/$target_branch/working 
+tar_logs=.girt/$target_branch/logs
+
+merge_message="$3"
+common=`get_common_commit $branch $target_branch`
+cur_last_commit=`get_last_commit_no $branch`
+
+# echo "--------------------------"
+# echo "common commit is $common"
+# echo "current in $branch last commit is $cur_last_commit"
+# echo "target commit in $target_branch is $target_commit"
+# echo "--------------------------"
+
+if test $common -eq $cur_last_commit
+then
+    # FAST FORWARD: no commit created
+    rm -rf $cur_repo $cur_index $cur_wrk *
+    cp -R $tar_repo $cur_repo
+    cp -R $tar_index $cur_index
+    cp -R $tar_wrk $cur_wrk
+    cp $tar_logs $cur_logs
+    # load file to current working directory
+    for file in $cur_wrk/*
+    do
+        cp -R $file .
+    done
+    echo "Fast-forward: no commit created"
+else
+    # For the same file in two branches, if one of them is same as the file in the bifuraction commit point
+    # file can be merged => create tmp directory to save the merged repo, keep the last modified file
+    mkdir tmp_merged
+    for cur_cmt_file in $cur_repo/*
+    do
+        file=$(echo $cur_cmt_file |rev |cut -d'/' -f1 |rev)
+        common_cmt_file=".girt/${branch}/commit_${common}/${file}"
+        tar_cmt_file="${tar_repo}/${file}"
+        tmp_file="tmp_merged/${file}"
+
+        # CASE VII: file in current repo does not exist in target repo and common repo
+        #           which means the file is added in current commit => save to tmp
+        if ! test -f $tar_cmt_file && ! test -f $common_cmt_file
+        then
+            cp $cur_cmt_file $tmp_file
+        
+        # CASE I:   file only edited in target branch, save target file into tmp
+        elif cmp -s $cur_cmt_file $common_cmt_file && ! cmp -s $tar_cmt_file $common_cmt_file
+        then
+            cp $tar_cmt_file $tmp_file
+        # CASE II:  file only edited in current branch, save current file into tmp
+        elif ! cmp -s $cur_cmt_file $common_cmt_file && cmp -s $tar_cmt_file $common_cmt_file
+        then
+            cp $cur_cmt_file $tmp_file
+        # CASE III: files are still same, save one of them
+        elif cmp -s $cur_cmt_file $tar_cmt_file
+        then
+            cp $cur_cmt_file $tmp_file
+        # CASE IV:  files have different edition => ERROR: cannot merge
+        elif ! cmp -s $cur_cmt_file $common_cmt_file && ! cmp -s $tar_cmt_file $common_cmt_file
+        then
+            echo "girt-merge: error: can not merge"
+            rm -rf tmp_merged
+            exit 1
+        fi
+    done
+
+    for tar_cmt_file in $tar_repo/*
+    do
+        file=$(echo $tar_cmt_file |rev |cut -d'/' -f1 |rev)
+        common_cmt_file=".girt/${branch}/commit_${common}/${file}"
+        cur_cmt_file="${cur_repo}/${file}"
+        tmp_file="tmp_merged/${file}"
+        # CASE V:   file created in target branch and does not exist in current branch
+        #           will be saved into tmp
+        if ! test -f $common_cmt_file
+        then
+            cp $tar_cmt_file $tmp_file
+        fi
+        # CASE VI:  file is deleted from current branch, but still exists in target branch
+        #           should not be merged into tmp => do nothing
+    done
+
+    # CASE VIII:    files in tmp_merged are same as last commit in current branch
+    #               will not merge into current branch => already up to date
+    cmp_merged=$( diff -r tmp_merged $cur_repo )
+    if test "$cmp_merged" = ""
+    then
+        echo "Already up to date"
+        rm -rf tmp_merged
+        exit 0
+    fi
+
+    # update files in current repository folder
+    rm -rf $cur_repo
+    cp -R tmp_merged $cur_repo
+    # update staged file
+    rm -rf $cur_index
+    cp -R tmp_merged $cur_index
+    # update file in current working directory
+    for file in *
+    do
+        if test $file = "tmp_merged"; then continue; fi
+        rm -rf $file
+    done
+    
+    for file in tmp_merged/*
+    do
+        cp $file .
+    done
+    
+    # save commit version
+    commit_no=$( cat .girt/commit |wc -l)
+    commit_dir=".girt/${branch}/commit_${commit_no}"
+    cp -R tmp_merged $commit_dir
+    rm -rf tmp_merged
+    # update commit logs file in current branch
+    cur_logs=.girt/${branch}/logs
+    tar_logs=.girt/${target_branch}/logs
+    content="${commit_no} ${merge_message}"
+    echo "${content}" >> $cur_logs
+    # echo "current branch logs:"
+    # cat $cur_logs
+    # echo "target branch logs:"
+    # cat $tar_logs
+    # echo "---------------------"
+    # echo "target commit is $target_commit in branch $target_branch"
+    `merge_logs $cur_logs $tar_logs $target_commit`
+    
+    # cp $cur_logs tmp_logs
+    # while read -r line
+    # do
+    #     commit=$(echo "$line" |cut -d' ' -f1)
+    #     if test $commit -gt $target_commit; then break; fi
+    #     echo "$line" >> $cur_logs
+    # done < $tar_logs
+    # cat $cur_logs |sort -u > tmp_logs
+    # rm $cur_logs
+    # cp tmp_logs $cur_logs
+    # rm tmp_logs
+
+    # update global logs file
+    echo "${commit_no} ${branch}" >> .girt/commit
+    echo "Committed as commit ${commit_no}"
+fi
