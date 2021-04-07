@@ -1,0 +1,110 @@
+#!/bin/dash
+
+# test .girt exists
+if ! test -d .girt
+then
+	echo "$0: error: girt repository directory .girt not found"
+	exit 1
+fi
+
+# get branch
+branch=$( cat .girt/branch )
+
+# initialize flags
+cached="false"
+force="false"
+files=""
+
+# specify options and files
+while test $# -gt 0
+do
+    case $1 in
+        --cached)
+        cached="true"
+        shift
+        ;;
+        --force)
+        force="true"
+        shift
+        ;;
+        *)
+        files="${files}${1} "
+        shift
+        ;;
+    esac
+done
+
+echo "$files" | sed 's/ $//' | tr ' ' '\n' >files.txt
+
+while read -r file
+do
+    index=".girt/${branch}/index/${file}"
+    repo=".girt/${branch}/repository/${file}"
+    # test file exists in index 
+    if ! test -f "$file" || ! test -f "$index"
+    then 
+        echo "girt-rm: error: '${file}' is not in the girt repository"
+        rm files.txt
+        exit 1
+    fi
+done < files.txt
+
+
+while read -r file
+do
+    index=".girt/${branch}/index/${file}"
+    repo=".girt/${branch}/repository/${file}"
+    # when force is specified, remove file directly
+    if test "$force" = "true"
+    then
+        if test "$cached" = "true"
+        then
+            rm "$index"
+        else
+            rm "$index" "$file"
+        fi
+        continue
+    fi
+
+    # Do comparison among current directory and index and repository
+    
+    # CASE I  : file in working directory and index are same, but diff from repo
+    #           file is staged but not yet committed
+    if cmp -s "$file" "$index" && ! cmp -s "$file" "$repo"
+    then
+        if test $cached = "true"
+        then
+            rm $index
+        else 
+            echo "girt-rm: error: '${file}' has staged changes in the index"
+        fi
+    
+    # CASE II : file in index is different from working directory file and repo directory file
+    elif ! cmp -s "$index" "$file" && ! cmp -s "$index" "$repo"
+    then
+        echo "girt-rm: error: '"$file"' in index is different to both to the working file and the repository"
+    
+    # CASE III: file in index is different from working directory but same as in repo
+    elif ! cmp -s "$file" "$index" && cmp -s "$index" "$repo"
+    then
+        if test $cached = "true"
+        then
+            rm $index
+        else
+            echo "girt-rm: error: '"$file"' in the repository is different to the working file"
+        fi
+   
+    # CASE IV : file in three directories are same
+    elif cmp -s "$file" "$index" && cmp -s "$index" "$repo"
+    then
+        # only remove from index with --cache
+        if test "$cached" = "true"
+        then
+            rm "$index"
+        else
+            rm "$file" "$index"
+        fi
+    fi
+done < files.txt
+
+rm files.txt

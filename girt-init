@@ -6,7 +6,14 @@ then
 	exit 1
 else
 	mkdir .girt
-	touch ./.girt/text.txt
+	echo 'master' > .girt/branch		# create file to record branches
+	touch .girt/commit				# record commit number
+	mkdir -p .girt/master/index			# create index folder
+	mkdir -p .girt/master/repository 	# create repository folder
+	mkdir -p .girt/master/working		# save current working directory when chekcout
+	touch .girt/master/logs				# create logs file
+	
 	echo "Initialized empty girt repository in .girt"
+	exit 0
 fi
 
